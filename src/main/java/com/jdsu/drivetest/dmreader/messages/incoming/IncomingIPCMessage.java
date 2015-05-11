@@ -1,5 +1,6 @@
-package com.jdsu.drivetest.dmreader.messages;
+package com.jdsu.drivetest.dmreader.messages.incoming;
 
+import com.jdsu.drivetest.dmreader.messages.MainCommandType;
 import org.codehaus.preon.annotation.BoundNumber;
 import org.codehaus.preon.annotation.BoundObject;
 import org.codehaus.preon.annotation.Choices;
@@ -11,7 +12,7 @@ import org.codehaus.preon.el.ImportStatic;
  * Created by wen55527 on 10/5/15.
  */
 @ImportStatic(MainCommandType.class)
-public class IPCMessage {
+public class IncomingIPCMessage {
 
     @BoundNumber(byteOrder = ByteOrder.LittleEndian)
     private short length;
@@ -21,15 +22,10 @@ public class IPCMessage {
     private MainCommandType mainCommandType = MainCommandType.IPC_DM_CMD;
     @BoundObject(selectFrom = @Choices(
             alternatives = {
-                    @Choices.Choice(condition = "mainCommandType == MainCommandType.IPC_DM_CMD", type = DMMessage.class)
+                    @Choices.Choice(condition = "mainCommandType == MainCommandType.IPC_DM_CMD", type = IncomingDMMessage.class)
             }
     ))
     private Object dmMessage;
-
-    public IPCMessage(short sequenceNo, Object dmMessage) {
-        this.sequenceNo = sequenceNo;
-        setDmMessage(dmMessage);
-    }
 
     public short getLength() {
         return length;
@@ -39,26 +35,11 @@ public class IPCMessage {
         return sequenceNo;
     }
 
-    public void setSequenceNo(short sequenceNo) {
-        this.sequenceNo = sequenceNo;
-    }
-
     public MainCommandType getMainCommandType() {
         return mainCommandType;
     }
 
-    public void setMainCommandType(MainCommandType mainCommandType) {
-        this.mainCommandType = mainCommandType;
-    }
-
     public Object getDmMessage() {
         return dmMessage;
-    }
-
-    public void setDmMessage(Object dmMessage) {
-        this.dmMessage = dmMessage;
-        if (dmMessage instanceof Sizable) {
-            length = (short) (((Sizable) dmMessage).getCalculatedLength() + 5);
-        }
     }
 }

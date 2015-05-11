@@ -1,13 +1,18 @@
 package com.jdsu.drivetest.dmreader;
 
-import com.jdsu.drivetest.dmreader.messages.*;
-import com.jdsu.drivetest.dmreader.messages.control.StartRequest;
-import jssc.SerialPortList;
+import com.jdsu.drivetest.dmreader.messages.incoming.IncomingHDLCPacket;
+import com.jdsu.drivetest.dmreader.messages.outgoing.control.StartRequest;
+import com.jdsu.drivetest.dmreader.messages.outgoing.control.StopRequest;
+import jssc.*;
 import org.apache.commons.codec.binary.Hex;
 import org.codehaus.preon.Codec;
 import org.codehaus.preon.Codecs;
+import org.codehaus.preon.DecodingException;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -25,34 +30,60 @@ public class Main {
         for (String portName : portNames) {
             LOG.info(portName);
         }
-        StartRequest req = new StartRequest();
-        req.setTimestamp(System.currentTimeMillis());
-        req.setVendor(new byte[]{0x00, 0x00, 0x00, 0x00});
-        HDLCPacket packet = new HDLCPacket(new IPCMessage((short) 0, new DMMessage(SubCommandType.DM_CONTROL_MSG, new ControlMessage(ControlMessageType.START_REQ, req))));
-        Codec<HDLCPacket> codec = Codecs.create(HDLCPacket.class);
-        try {
-            LOG.info(Hex.encodeHexString(Codecs.encode(packet, codec)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-//        SerialPort serialPort = new SerialPort("COM3");
-//        try {
-//            LOG.info("open COM3 port");
-//            serialPort.openPort();//Open serial port
-//            serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
-//            LOG.info("send DM Start request");
-//            serialPort.writeBytes(DM_START_REQ);//Write data to port
-//            LOG.info("read DM Start response " + serialPort.readHexString());
-//            LOG.info("send DM Stop request");
-//            serialPort.writeBytes(DM_STOP_REQ);
-//            String hex;
-//            while ((hex = serialPort.readHexString()) != null) {
-//                LOG.info("read DM Stop response " + hex);
-//            }
-//            serialPort.closePort();//Close serial port
-//        } catch (SerialPortException ex) {
-//            LOG.log(Level.SEVERE, ex.toString(), ex);
-//        }
+        SerialPort serialPort = new SerialPort("COM3");
+        try {
+            LOG.info("open COM3 port");
+            serialPort.openPort();//Open serial port
+            serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
+
+            serialPort.setEventsMask(SerialPort.MASK_RXCHAR);
+            serialPort.addEventListener(new SerialPortEventListener() {
+
+                private Codec<IncomingHDLCPacket> codec = Codecs.create(IncomingHDLCPacket.class);
+
+                @Override
+                public void serialEvent(SerialPortEvent serialPortEvent) {
+                    if (serialPortEvent.isRXCHAR()) {
+                        try {
+                            //TODO extract packets in bytes by the deliminators
+                            byte[] bytes = serialPort.readBytes(serialPortEvent.getEventValue());
+                            ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+                            LOG.info("received packet: " + Hex.encodeHexString(bytes));
+                            IncomingHDLCPacket packet = Codecs.decode(codec, buffer);
+                        } catch (SerialPortException | DecodingException e) {
+                            LOG.log(Level.SEVERE, e.toString(), e);
+                        }
+                    }
+                }
+
+            });
+
+            //send DM Start Request
+            StartRequest startRequest = new StartRequest(System.currentTimeMillis(), new byte[]{0x00, 0x00, 0x00, 0x00});
+            Codec<StartRequest> startReqCodec = Codecs.create(StartRequest.class);
+            byte[] packet = Codecs.encode(startRequest, startReqCodec);
+            LOG.info("send DM Start Request: " + Hex.encodeHexString(packet));
+            serialPort.writeBytes(packet);//Write data to port
+
+            Thread.sleep(5 * 1000);
+
+            //send DM Stop Request
+            StopRequest stopRequest = new StopRequest(System.currentTimeMillis());
+            Codec<StopRequest> stopReqCodec = Codecs.create(StopRequest.class);
+            packet = Codecs.encode(stopRequest, stopReqCodec);
+            LOG.info("send DM Stop request: " + Hex.encodeHexString(packet));
+            serialPort.writeBytes(packet);
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    serialPort.closePort();
+                } catch (SerialPortException e) {
+                    LOG.log(Level.SEVERE, e.toString(), e);
+                }
+            }));
+        } catch (SerialPortException | IOException | InterruptedException e) {
+            LOG.log(Level.SEVERE, e.toString(), e);
+        }
     }
 }
