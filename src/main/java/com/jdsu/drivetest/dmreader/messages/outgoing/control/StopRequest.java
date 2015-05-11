@@ -2,6 +2,7 @@ package com.jdsu.drivetest.dmreader.messages.outgoing.control;
 
 import com.jdsu.drivetest.dmreader.messages.ControlMessageType;
 import com.jdsu.drivetest.dmreader.messages.outgoing.OutgoingControlMessage;
+import org.codehaus.preon.annotation.Bound;
 import org.codehaus.preon.annotation.BoundNumber;
 import org.codehaus.preon.buffer.ByteOrder;
 
@@ -10,15 +11,16 @@ import org.codehaus.preon.buffer.ByteOrder;
  */
 public class StopRequest extends OutgoingControlMessage {
     @BoundNumber(size = "8")
-    private ControlMessageType controlMessageType = ControlMessageType.START_REQ;
+    private ControlMessageType controlMessageType = ControlMessageType.STOP_REQ;
     @BoundNumber(size = "32", byteOrder = ByteOrder.LittleEndian)
     private long timestamp;
+    @Bound
+    private byte endFlag = 0x7E;
 
-    public StopRequest(long timestamp) {
+    public StopRequest(short sequenceNo, long timestamp) {
+        super((short) 5);
         this.timestamp = timestamp;
-        setIpcLength((short) (IPC_HEADER_LENGTH + DM_HEADER_LENGTH + CONTROL_HEADER_LENGTH + 5));
-        setHdlcLength((short) (HDLC_HEADER_LENGTH + getIpcLength()));
-        sequenceNo++;
+        setSequenceNo(sequenceNo);
     }
 
     public ControlMessageType getControlMessageType() {

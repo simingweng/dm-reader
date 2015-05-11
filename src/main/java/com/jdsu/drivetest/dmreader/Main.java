@@ -26,6 +26,7 @@ public class Main {
     private static final byte[] DM_STOP_REQ = {0x7F, 0x0E, 0x00, 0x00, 0x0B, 0x00, 0x02, 0x00, (byte) 0xA0, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x7E};
 
     public static void main(String[] args) {
+
         String[] portNames = SerialPortList.getPortNames();
         for (String portName : portNames) {
             LOG.info(portName);
@@ -60,7 +61,7 @@ public class Main {
             });
 
             //send DM Start Request
-            StartRequest startRequest = new StartRequest(System.currentTimeMillis(), new byte[]{0x00, 0x00, 0x00, 0x00});
+            StartRequest startRequest = new StartRequest((short) 0, System.currentTimeMillis(), new byte[]{'J' & 0xFF, 'D' & 0xFF, 'S' & 0xFF, 'U' & 0xFF});
             Codec<StartRequest> startReqCodec = Codecs.create(StartRequest.class);
             byte[] packet = Codecs.encode(startRequest, startReqCodec);
             LOG.info("send DM Start Request: " + Hex.encodeHexString(packet));
@@ -69,7 +70,7 @@ public class Main {
             Thread.sleep(5 * 1000);
 
             //send DM Stop Request
-            StopRequest stopRequest = new StopRequest(System.currentTimeMillis());
+            StopRequest stopRequest = new StopRequest((short) 1, System.currentTimeMillis());
             Codec<StopRequest> stopReqCodec = Codecs.create(StopRequest.class);
             packet = Codecs.encode(stopRequest, stopReqCodec);
             LOG.info("send DM Stop request: " + Hex.encodeHexString(packet));

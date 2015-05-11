@@ -10,19 +10,24 @@ public class OutgoingIPCMessage extends OutgoingHDLCPPacket {
 
     protected static final short IPC_HEADER_LENGTH = 4;
     @BoundNumber(byteOrder = ByteOrder.LittleEndian)
-    protected static short sequenceNo;
-    @BoundNumber(byteOrder = ByteOrder.LittleEndian)
     private short ipcLength;
+    @BoundNumber(byteOrder = ByteOrder.LittleEndian)
+    private short sequenceNo;
+
+    public OutgoingIPCMessage(short payloadLength) {
+        super((short) (payloadLength + IPC_HEADER_LENGTH));
+        ipcLength = (short) (payloadLength + IPC_HEADER_LENGTH);
+    }
 
     public short getIpcLength() {
         return ipcLength;
     }
 
-    protected void setIpcLength(short ipcLength) {
-        this.ipcLength = ipcLength;
-    }
-
     public short getSequenceNo() {
         return sequenceNo;
+    }
+
+    public void setSequenceNo(short sequenceNo) {
+        this.sequenceNo = sequenceNo;
     }
 }

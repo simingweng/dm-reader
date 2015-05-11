@@ -13,6 +13,10 @@ public class OutgoingControlMessage extends OutgoingDMMessage {
     @BoundNumber(size = "8")
     private SubCommandType subCommandType = SubCommandType.DM_CONTROL_MSG;
 
+    public OutgoingControlMessage(short payloadLength) {
+        super((short) (payloadLength + CONTROL_HEADER_LENGTH));
+    }
+
     public SubCommandType getSubCommandType() {
         return subCommandType;
     }

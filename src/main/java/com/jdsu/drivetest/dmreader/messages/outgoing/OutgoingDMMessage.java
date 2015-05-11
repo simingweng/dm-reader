@@ -13,6 +13,10 @@ public class OutgoingDMMessage extends OutgoingIPCMessage {
     @BoundNumber(size = "8")
     private MainCommandType mainCommandType = MainCommandType.IPC_DM_CMD;
 
+    public OutgoingDMMessage(short payloadLength) {
+        super((short) (payloadLength + DM_HEADER_LENGTH));
+    }
+
     public MainCommandType getMainCommandType() {
         return mainCommandType;
     }

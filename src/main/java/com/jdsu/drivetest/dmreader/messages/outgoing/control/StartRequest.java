@@ -21,12 +21,11 @@ public class StartRequest extends OutgoingControlMessage {
     @Bound
     private byte endFlag = 0x7E;
 
-    public StartRequest(long timestamp, byte[] vendor) {
+    public StartRequest(short sequenceNo, long timestamp, byte[] vendor) {
+        super((short) 9);
         this.timestamp = timestamp;
         this.vendor = vendor;
-        setIpcLength((short) (IPC_HEADER_LENGTH + DM_HEADER_LENGTH + CONTROL_HEADER_LENGTH + 9));
-        setHdlcLength((short) (HDLC_HEADER_LENGTH + getIpcLength()));
-        sequenceNo++;
+        setSequenceNo(sequenceNo);
     }
 
     public ControlMessageType getControlMessageType() {

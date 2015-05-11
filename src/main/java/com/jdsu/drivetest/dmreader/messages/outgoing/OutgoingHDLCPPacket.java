@@ -18,11 +18,10 @@ public class OutgoingHDLCPPacket {
     @Bound
     private byte control = 0x00;
 
+    public OutgoingHDLCPPacket(short payloadLength) {
+        hdlcLength = (short) (payloadLength + HDLC_HEADER_LENGTH);
+    }
     public short getHdlcLength() {
         return hdlcLength;
-    }
-
-    protected void setHdlcLength(short hdlcLength) {
-        this.hdlcLength = hdlcLength;
     }
 }
