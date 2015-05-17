@@ -11,8 +11,8 @@ import org.codehaus.preon.buffer.ByteOrder;
 public class IncomingHDLCPacket {
     @Bound
     private byte startFlag;
-    @BoundNumber(byteOrder = ByteOrder.LittleEndian)
-    private short length;
+    @BoundNumber(size = "16", byteOrder = ByteOrder.LittleEndian)
+    private int length;
     @Bound
     private byte control;
     @Bound
@@ -24,7 +24,7 @@ public class IncomingHDLCPacket {
         return startFlag;
     }
 
-    public short getLength() {
+    public int getLength() {
         return length;
     }
 
@@ -38,5 +38,16 @@ public class IncomingHDLCPacket {
 
     public byte getEndFlag() {
         return endFlag;
+    }
+
+    @Override
+    public String toString() {
+        return "IncomingHDLCPacket{" +
+                "startFlag=" + startFlag +
+                ", length=" + length +
+                ", control=" + control +
+                ", incomingIPCMessage=" + incomingIPCMessage +
+                ", endFlag=" + endFlag +
+                '}';
     }
 }

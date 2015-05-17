@@ -1,20 +1,19 @@
 package com.jdsu.drivetest.dmreader.messages.incoming;
 
-import com.jdsu.drivetest.dmreader.messages.incoming.control.StartResponse;
+import com.jdsu.drivetest.dmreader.messages.incoming.hspa.UPHYPowerControlInfo;
 import org.codehaus.preon.annotation.Bound;
 import org.codehaus.preon.annotation.BoundObject;
 import org.codehaus.preon.annotation.Choices;
 
 /**
- * DM Control message, sub command byte = 0x00
- * Created by wen55527 on 10/5/15.
+ * Created by simingweng on 17/5/15.
  */
-public class IncomingControlMessage {
+public class IncomingHSPAData {
     @Bound
     private byte type;
     @BoundObject(selectFrom = @Choices(
             alternatives = {
-                    @Choices.Choice(condition = "type == 0x01", type = StartResponse.class)
+                    @Choices.Choice(condition = "type == 0x00", type = UPHYPowerControlInfo.class)
             }
     ))
     private Object message;
@@ -29,7 +28,7 @@ public class IncomingControlMessage {
 
     @Override
     public String toString() {
-        return "IncomingControlMessage{" +
+        return "IncomingHSPAData{" +
                 "type=" + type +
                 ", message=" + message +
                 '}';

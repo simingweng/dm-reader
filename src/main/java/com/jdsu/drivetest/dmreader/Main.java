@@ -9,6 +9,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.codehaus.preon.Codec;
 import org.codehaus.preon.Codecs;
+import org.codehaus.preon.DecodingException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -69,17 +70,49 @@ public class Main {
             serialPort.addEventListener(new SerialPortEventListener() {
 
                 private Codec<IncomingHDLCPacket> codec = Codecs.create(IncomingHDLCPacket.class);
+                //the length field of the incoming HDLC packet is a short value, so maximum length is 0xFFFF
+                private ByteBuffer buffer = ByteBuffer.allocate(0xFFFF).order(ByteOrder.LITTLE_ENDIAN);
 
                 @Override
                 public void serialEvent(SerialPortEvent serialPortEvent) {
                     if (serialPortEvent.isRXCHAR()) {
                         try {
-                            //TODO extract packets in bytes by the deliminators
-                            byte[] bytes = serialPort.readBytes(serialPortEvent.getEventValue());
-                            ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
-                            LOG.info("received packet: " + Hex.encodeHexString(bytes));
-                            //IncomingHDLCPacket packet = Codecs.decode(codec, buffer);
-                        } catch (SerialPortException e) {
+                            ByteBuffer tempBuffer = ByteBuffer.wrap(serialPort.readBytes()).order(ByteOrder.LITTLE_ENDIAN);
+                            while (tempBuffer.hasRemaining()) {
+                                if (buffer.position() == 0) {
+                                    //we're expecting a new packet from start, looking for the 0x7F delimit
+                                    while (tempBuffer.get() != 0x7F) {
+                                        //LOG.info("discard a single garbage byte");
+                                    }
+                                    buffer.put((byte) 0x7F);
+                                } else if (buffer.position() < 3) {
+                                    //the length field is not complete yet, we copy byte by byte to make things simpler
+                                    buffer.put(tempBuffer.get());
+                                } else {
+                                    //we know the length of the HDLC packet, let's try to complete the packet if possible
+                                    int hdlcLength = buffer.getShort(1) & 0xFFFF;
+                                    int numOfBytesToComplete = hdlcLength + 2 - buffer.position();
+                                    if (tempBuffer.remaining() < numOfBytesToComplete) {
+                                        //still not enough even we consume everything left in the temp buffer
+                                        byte[] bytes = new byte[tempBuffer.remaining()];
+                                        tempBuffer.get(bytes);
+                                        buffer.put(bytes);
+                                    } else {
+                                        //sufficient bytes to complete this packet
+                                        byte[] bytes = new byte[numOfBytesToComplete];
+                                        tempBuffer.get(bytes);
+                                        buffer.put(bytes);
+                                        buffer.flip();
+                                        byte[] wholePacket = new byte[buffer.limit()];
+                                        buffer.get(wholePacket);
+                                        LOG.info("received raw packet: " + Hex.encodeHexString(wholePacket));
+                                        IncomingHDLCPacket packet = Codecs.decode(codec, wholePacket);
+                                        LOG.info("decoded packet: " + packet.toString());
+                                        buffer.clear();
+                                    }
+                                }
+                            }
+                        } catch (SerialPortException | DecodingException e) {
                             LOG.log(Level.SEVERE, e.toString(), e);
                         }
                     }

@@ -1,23 +1,22 @@
 package com.jdsu.drivetest.dmreader.messages.outgoing;
 
-import com.jdsu.drivetest.dmreader.messages.SubCommandType;
-import org.codehaus.preon.annotation.BoundNumber;
+import org.codehaus.preon.annotation.Bound;
 
 /**
  * Created by wen55527 on 11/5/15.
  */
 public class OutgoingControlMessage extends OutgoingDMMessage {
 
-    protected static final short CONTROL_HEADER_LENGTH = 1;
+    private static final int CONTROL_HEADER_LENGTH = 1;
 
-    @BoundNumber(size = "8")
-    private SubCommandType subCommandType = SubCommandType.DM_CONTROL_MSG;
+    @Bound
+    private byte subCommandType = 0x00;
 
-    public OutgoingControlMessage(short payloadLength) {
-        super((short) (payloadLength + CONTROL_HEADER_LENGTH));
+    public OutgoingControlMessage(int payloadLength) {
+        super(payloadLength + CONTROL_HEADER_LENGTH);
     }
 
-    public SubCommandType getSubCommandType() {
+    public byte getSubCommandType() {
         return subCommandType;
     }
 }

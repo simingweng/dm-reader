@@ -9,19 +9,20 @@ import org.codehaus.preon.buffer.ByteOrder;
  */
 public class OutgoingHDLCPPacket {
 
-    protected static final short HDLC_HEADER_LENGTH = 3;
+    private static final int HDLC_HEADER_LENGTH = 3;
 
     @Bound
     private byte startFlag = 0x7F;
-    @BoundNumber(byteOrder = ByteOrder.LittleEndian)
-    private short hdlcLength;
+    @BoundNumber(size = "16", byteOrder = ByteOrder.LittleEndian)
+    private int hdlcLength;
     @Bound
     private byte control = 0x00;
 
-    public OutgoingHDLCPPacket(short payloadLength) {
-        hdlcLength = (short) (payloadLength + HDLC_HEADER_LENGTH);
+    public OutgoingHDLCPPacket(int payloadLength) {
+        hdlcLength = payloadLength + HDLC_HEADER_LENGTH;
     }
-    public short getHdlcLength() {
+
+    public int getHdlcLength() {
         return hdlcLength;
     }
 }

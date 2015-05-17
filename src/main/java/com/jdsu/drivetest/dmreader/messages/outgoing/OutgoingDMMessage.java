@@ -1,23 +1,22 @@
 package com.jdsu.drivetest.dmreader.messages.outgoing;
 
-import com.jdsu.drivetest.dmreader.messages.MainCommandType;
-import org.codehaus.preon.annotation.BoundNumber;
+import org.codehaus.preon.annotation.Bound;
 
 /**
  * Created by wen55527 on 11/5/15.
  */
 public class OutgoingDMMessage extends OutgoingIPCMessage {
 
-    protected static final short DM_HEADER_LENGTH = 1;
+    private static final int DM_HEADER_LENGTH = 1;
 
-    @BoundNumber(size = "8")
-    private MainCommandType mainCommandType = MainCommandType.IPC_DM_CMD;
+    @Bound
+    private byte mainCommandType = (byte) 0xA0;
 
-    public OutgoingDMMessage(short payloadLength) {
-        super((short) (payloadLength + DM_HEADER_LENGTH));
+    public OutgoingDMMessage(int payloadLength) {
+        super(payloadLength + DM_HEADER_LENGTH);
     }
 
-    public MainCommandType getMainCommandType() {
+    public byte getMainCommandType() {
         return mainCommandType;
     }
 }

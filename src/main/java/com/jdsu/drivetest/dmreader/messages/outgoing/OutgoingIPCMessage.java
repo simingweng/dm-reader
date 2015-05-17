@@ -8,26 +8,26 @@ import org.codehaus.preon.buffer.ByteOrder;
  */
 public class OutgoingIPCMessage extends OutgoingHDLCPPacket {
 
-    protected static final short IPC_HEADER_LENGTH = 4;
-    @BoundNumber(byteOrder = ByteOrder.LittleEndian)
-    private short ipcLength;
-    @BoundNumber(byteOrder = ByteOrder.LittleEndian)
-    private short sequenceNo;
+    private static final int IPC_HEADER_LENGTH = 4;
+    @BoundNumber(size = "16", byteOrder = ByteOrder.LittleEndian)
+    private int ipcLength;
+    @BoundNumber(size = "16", byteOrder = ByteOrder.LittleEndian)
+    private int sequenceNo;
 
-    public OutgoingIPCMessage(short payloadLength) {
-        super((short) (payloadLength + IPC_HEADER_LENGTH));
-        ipcLength = (short) (payloadLength + IPC_HEADER_LENGTH);
+    public OutgoingIPCMessage(int payloadLength) {
+        super(payloadLength + IPC_HEADER_LENGTH);
+        ipcLength = payloadLength + IPC_HEADER_LENGTH;
     }
 
-    public short getIpcLength() {
+    public int getIpcLength() {
         return ipcLength;
     }
 
-    public short getSequenceNo() {
+    public int getSequenceNo() {
         return sequenceNo;
     }
 
-    public void setSequenceNo(short sequenceNo) {
+    public void setSequenceNo(int sequenceNo) {
         this.sequenceNo = sequenceNo;
     }
 }

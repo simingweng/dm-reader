@@ -1,45 +1,53 @@
 package com.jdsu.drivetest.dmreader.messages.incoming;
 
-import com.jdsu.drivetest.dmreader.messages.MainCommandType;
+import org.codehaus.preon.annotation.Bound;
 import org.codehaus.preon.annotation.BoundNumber;
 import org.codehaus.preon.annotation.BoundObject;
 import org.codehaus.preon.annotation.Choices;
 import org.codehaus.preon.buffer.ByteOrder;
-import org.codehaus.preon.el.ImportStatic;
 
 /**
  * the base class for all the DM messages
  * Created by wen55527 on 10/5/15.
  */
-@ImportStatic(MainCommandType.class)
 public class IncomingIPCMessage {
 
-    @BoundNumber(byteOrder = ByteOrder.LittleEndian)
-    private short length;
-    @BoundNumber(byteOrder = ByteOrder.LittleEndian)
-    private short sequenceNo;
-    @BoundNumber(size = "8")
-    private MainCommandType mainCommandType = MainCommandType.IPC_DM_CMD;
+    @BoundNumber(size = "16", byteOrder = ByteOrder.LittleEndian)
+    private int length;
+    @BoundNumber(size = "16", byteOrder = ByteOrder.LittleEndian)
+    private int sequenceNo;
+    @Bound
+    private byte mainCommandType;
     @BoundObject(selectFrom = @Choices(
             alternatives = {
-                    @Choices.Choice(condition = "mainCommandType == MainCommandType.IPC_DM_CMD", type = IncomingDMMessage.class)
+                    @Choices.Choice(condition = "mainCommandType == 0xA0", type = IncomingDMMessage.class)
             }
     ))
     private Object dmMessage;
 
-    public short getLength() {
+    public int getLength() {
         return length;
     }
 
-    public short getSequenceNo() {
+    public int getSequenceNo() {
         return sequenceNo;
     }
 
-    public MainCommandType getMainCommandType() {
+    public byte getMainCommandType() {
         return mainCommandType;
     }
 
     public Object getDmMessage() {
         return dmMessage;
+    }
+
+    @Override
+    public String toString() {
+        return "IncomingIPCMessage{" +
+                "length=" + length +
+                ", sequenceNo=" + sequenceNo +
+                ", mainCommandType=" + mainCommandType +
+                ", dmMessage=" + dmMessage +
+                '}';
     }
 }
