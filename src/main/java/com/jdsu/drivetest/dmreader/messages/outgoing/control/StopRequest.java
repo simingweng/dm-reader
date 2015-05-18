@@ -10,8 +10,8 @@ import org.codehaus.preon.buffer.ByteOrder;
  * Created by wen55527 on 11/5/15.
  */
 public class StopRequest extends OutgoingControlMessage {
-    @Bound
-    private byte controlMessageType = 0x02;
+    @BoundNumber(size = "8")
+    private short controlMessageType = 0x02;
     @BoundNumber(size = "32", byteOrder = ByteOrder.LittleEndian)
     private long timestamp;
     @Bound
@@ -23,7 +23,7 @@ public class StopRequest extends OutgoingControlMessage {
         setSequenceNo(sequenceNo);
     }
 
-    public byte getControlMessageType() {
+    public short getControlMessageType() {
         return controlMessageType;
     }
 

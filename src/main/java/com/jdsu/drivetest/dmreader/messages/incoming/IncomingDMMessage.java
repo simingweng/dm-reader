@@ -1,6 +1,6 @@
 package com.jdsu.drivetest.dmreader.messages.incoming;
 
-import org.codehaus.preon.annotation.Bound;
+import org.codehaus.preon.annotation.BoundNumber;
 import org.codehaus.preon.annotation.BoundObject;
 import org.codehaus.preon.annotation.Choices;
 
@@ -10,8 +10,8 @@ import org.codehaus.preon.annotation.Choices;
  * Created by wen55527 on 10/5/15.
  */
 public class IncomingDMMessage {
-    @Bound
-    private byte subCommandType;
+    @BoundNumber(size = "8")
+    private short subCommandType;
     @BoundObject(selectFrom = @Choices(
             alternatives = {
                     @Choices.Choice(condition = "subCommandType == 0x00", type = IncomingControlMessage.class),
@@ -24,7 +24,7 @@ public class IncomingDMMessage {
     ))
     private Object subCommand;
 
-    public byte getSubCommandType() {
+    public short getSubCommandType() {
         return subCommandType;
     }
 

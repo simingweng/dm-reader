@@ -1,6 +1,5 @@
 package com.jdsu.drivetest.dmreader.messages.incoming;
 
-import org.codehaus.preon.annotation.Bound;
 import org.codehaus.preon.annotation.BoundNumber;
 import org.codehaus.preon.annotation.BoundObject;
 import org.codehaus.preon.annotation.Choices;
@@ -16,8 +15,8 @@ public class IncomingIPCMessage {
     private int length;
     @BoundNumber(size = "16", byteOrder = ByteOrder.LittleEndian)
     private int sequenceNo;
-    @Bound
-    private byte mainCommandType;
+    @BoundNumber(size = "8")
+    private short mainCommandType;
     @BoundObject(selectFrom = @Choices(
             alternatives = {
                     @Choices.Choice(condition = "mainCommandType == 0xA0", type = IncomingDMMessage.class)
@@ -33,7 +32,7 @@ public class IncomingIPCMessage {
         return sequenceNo;
     }
 
-    public byte getMainCommandType() {
+    public short getMainCommandType() {
         return mainCommandType;
     }
 
